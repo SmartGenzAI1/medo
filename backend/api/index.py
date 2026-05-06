@@ -1,7 +1,10 @@
+"""
+RoastMyResume API - Backend service for AI-powered resume roasting
+"""
 from fastapi import FastAPI, Request, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 from mangum import Mangum
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional, Literal
 import httpx
 import os
@@ -11,41 +14,64 @@ from datetime import datetime, timedelta
 from upstash_redis import Redis
 import stripe
 
-app = FastAPI(title="RoastMyResume API")
+# =============================================================================
+# App Initialization
+# =============================================================================
+
+app = FastAPI(
+    title="RoastMyResume API",
+    description="AI-powered resume roasting service",
+    version="1.0.0"
+)
 
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
+    allow_origins=["*"],  # TODO: Configure appropriately for production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Environment variables
-QWEN_API_KEY = os.getenv("QWEN_API_KEY")
-QWEN_BASE_URL = os.getenv("QWEN_BASE_URL", "https://dashscope.aliyuncs.com/compatible-mode/v1")
-NEXTAUTH_SECRET = os.getenv("NEXTAUTH_SECRET")
-UPSTASH_REDIS_URL = os.getenv("UPSTASH_REDIS_URL")
-UPSTASH_REDIS_TOKEN = os.getenv("UPSTASH_REDIS_TOKEN")
-STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
-STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
-SHARE_JWT_SECRET = os.getenv("SHARE_JWT_SECRET", "fallback-secret-change-in-production")
-BASE_URL = os.getenv("NEXTAUTH_URL", "http://localhost:3000")
+# =============================================================================
+# Configuration
+# =============================================================================
+
+class Settings:
+    """Application settings loaded from environment variables"""
+    QWEN_API_KEY: str = os.getenv("QWEN_API_KEY")
+    QWEN_BASE_URL: str = os.getenv("QWEN_BASE_URL", "https://dashscope.aliyuncs.com/compatible-mode/v1")
+    NEXTAUTH_SECRET: str = os.getenv("NEXTAUTH_SECRET")
+    UPSTASH_REDIS_URL: str = os.getenv("UPSTASH_REDIS_URL")
+    UPSTASH_REDIS_TOKEN: str = os.getenv("UPSTASH_REDIS_TOKEN")
+    STRIPE_SECRET_KEY: str = os.getenv("STRIPE_SECRET_KEY")
+    STRIPE_WEBHOOK_SECRET: str = os.getenv("STRIPE_WEBHOOK_SECRET")
+    SHARE_JWT_SECRET: str = os.getenv("SHARE_JWT_SECRET", "fallback-secret-change-in-production")
+    BASE_URL: str = os.getenv("NEXTAUTH_URL", "http://localhost:3000")
+
+settings = Settings()
 
 # Initialize Redis
-redis = Redis(url=UPSTASH_REDIS_URL, token=UPSTASH_REDIS_TOKEN) if UPSTASH_REDIS_URL and UPSTASH_REDIS_TOKEN else None
+redis: Optional[Redis] = None
+if settings.UPSTASH_REDIS_URL and settings.UPSTASH_REDIS_TOKEN:
+    redis = Redis(url=settings.UPSTASH_REDIS_URL, token=settings.UPSTASH_REDIS_TOKEN)
 
 # Initialize Stripe
-stripe.api_key = STRIPE_SECRET_KEY
+stripe.api_key = settings.STRIPE_SECRET_KEY
+
+# =============================================================================
+# Request/Response Models
+# =============================================================================
 
 class RoastRequest(BaseModel):
-    text: str
-    intensity: Literal["mild", "spicy"]
-    user_id: str
-    tier: Literal["free", "pro"]
+    """Request model for generating a roast"""
+    text: str = Field(..., description="Resume text to roast", max_length=15000)
+    intensity: Literal["mild", "spicy"] = Field(..., description="Roast intensity level")
+    user_id: str = Field(..., description="User ID for rate limiting")
+    tier: Literal["free", "pro"] = Field(..., description="User subscription tier")
 
 class ShareLinkRequest(BaseModel):
+    """Request model for creating a share link"""
     roast: str
     glow_up: str
     ats_rewrite: Optional[str] = None
