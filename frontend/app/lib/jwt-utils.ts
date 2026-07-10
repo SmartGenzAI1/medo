@@ -10,6 +10,7 @@ export interface SharePayload {
   ats_rewrite?: string;
   intensity: "mild" | "spicy";
   created_at: number;
+  [key: string]: any;
 }
 
 /**

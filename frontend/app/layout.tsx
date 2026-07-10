@@ -21,15 +21,17 @@ export const metadata: Metadata = {
   },
 };
 
+import { Providers } from "./providers";
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${playfair.variable} font-sans antialiased`}>
-        {children}
+    <html lang="en" suppressHydrationWarning className="dark">
+      <body className={`${inter.variable} ${playfair.variable} font-sans bg-background text-foreground antialiased`}>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

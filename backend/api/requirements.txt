@@ -3,6 +3,7 @@ mangum==0.17.0
 pydantic==2.6.1
 httpx==0.26.0
 pyjwt==2.8.0
-stripe==7.14.0
-upstash-redis==1.0.3
 python-dotenv==1.0.1
+psycopg2-binary==2.9.9
+pg8000==1.30.5
+razorpay==1.4.1
