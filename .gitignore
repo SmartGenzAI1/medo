@@ -1,6 +1,12 @@
-```
+# Next.js Build Output
+.next/
+out/
+
+# Vercel Configurations and Cache
+.vercel/
+
 # Python
-__pycache__/
+**/__pycache__/
 *.py[cod]
 *$py.class
 *.so
@@ -36,9 +42,6 @@ yarn-error.log*
 
 # Logs
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 
 # Coverage
 .coverage
@@ -49,33 +52,25 @@ istanbul/
 .mochacov.json
 .nycrc
 
-# IDE
+# IDE / Editors
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# OS
+# OS Files
 .DS_Store
 Thumbs.db
 
-# Environment variables
+# Local Environment Variables
 .env
 .env.local
+*.env.local
 *.env.*
-
-# Build outputs
-dist/
-build/
-target/
-out/
-bundle.js
-*.min.js
-*.min.css
+frontend/.env.local
+backend/.env
 
 # Temporary files
 *.tmp
 *.temp
-.DS_Store
-```
